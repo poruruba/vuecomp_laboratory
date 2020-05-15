@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src * data: gap: https://ssl.gstatic.com 'unsafe-eval' 'unsafe-inline'; style-src * 'unsafe-inline'; media-src *; img-src * data: content: blob:;">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="msapplication-tap-highlight" content="no">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+  <!-- Optional theme -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap-theme.min.css" integrity="sha384-6pzBo3FDv/PJ8r2KRkGHifhEocL+1X2rVCTTkUfGk7/0pbek5mMa1upzvWbrUbOZ" crossorigin="anonymous">
+  <!-- Latest compiled and minified JavaScript -->
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
+
+  <title>Swagger定義ファイルエディタ</title>
+
+  <link rel="stylesheet" href="css/start.css">
+  <script src="js/methods_bootstrap.js"></script>
+  <script src="js/components_bootstrap.js"></script>
+  <script src="js/vue_utils.js"></script>
+
+  <script src="dist/js/vconsole.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+  <script src="js/swagger_utils.js"></script>
+  <script src="dist/js/js-yaml.min.js"></script>
+</head>
+<body>
+    <div id="top" class="container">
+        <h1 class="page-header">Swagger定義ファイルエディタ</h1>
+
+        <label>Load from Web</label>
+        <button class="btn btn-default" v-on:click="do_load('json')">do_load_json</button>
+        <button class="btn btn-default" v-on:click="do_load('yaml')">do_load_yaml</button>
+        <input type="text" class="form-control" v-model="base_url">
+        <br>
+        <label>Read from File</label>
+        <input type="file" v-on:change="do_read" v-on:click="read_click">
+        <br>
+        <label>Read Sample</label>
+        <button class="btn btn-default" v-on:click="do_sample()">do_sample</button>
+        <br>
+        <br>
+        <div v-if="swagger_type">
+          <button class="btn btn-default" v-on:click="do_reload">do_reload</button>
+          <button class="btn btn-default" v-on:click="do_save('json')">do_save_json</button>
+          <button class="btn btn-default" v-on:click="do_save('yaml')">do_save_yaml</button>
+          <button class="btn btn-default" v-on:click="do_view()">do_view</button>
+        </div>
+        <br>
+        <br>
+        <dl class="dl-horizontal" v-if="swagger_type">
+          <span v-for="(value, key, index) in swagger_json">
+            <span v-if="key=='swagger'">
+              <dt>swagger</dt>
+              <dd>{{swagger_json.swagger}}</dd>
+            </span>
+            <span v-else-if="key=='info'" v-for="(value1, key1, index1) in value">
+              <span v-if="key1=='version'">
+                <dt class="checkbox">version</dt>
+                <dd class="form-inline"><input type="text" class="form-control" v-model="swagger_json.info.version"></dd>
+              </span>
+              <span v-else-if="key1=='title'">
+                <dt class="checkbox">title</dt>
+                <dd><input type="text" class="form-control" v-model="swagger_json.info.title"></dd>
+              </span>
+              <span v-else-if="key1=='description'">
+                <dt class="checkbox">description</dt>
+                <dd><textarea type="text" class="form-control" rows="3" v-model="swagger_json.info.description"></textarea></dd>
+              </span>
+              <span v-else>
+                <dt class="checkbox">{{key1}}</dt>
+                <dd><input type="text" class="form-control" v-bind:value="JSON.stringify(swagger_json.info[key1])" readonly></dd>
+              </span>
+            </span>
+            <span v-else-if="key=='host'">
+              <dt class="checkbox">host</dt>
+              <dd><input type="text" class="form-control" v-model="swagger_json.host"></dd>
+            </span>
+            <span v-else-if="key=='basePath'">
+              <dt class="checkbox">basePath</dt>
+              <dd class="form-inline"><input type="text" class="form-control" v-model="swagger_json.basePath"></dd>
+            </span>
+            <span v-else-if="key=='schemes'">
+              <dt>schemes</dt>
+              <dd>{{swagger_json.schemes}}</dd>
+            </span>
+            <span v-else-if="key=='consumes'">
+              <dt>consumes</dt>
+              <dd>{{swagger_json.consumes}}</dd>
+            </span>
+            <span v-else-if="key=='produces'">
+              <dt>produces</dt>
+              <dd>{{swagger_json.produces}}</dd>
+            </span>
+            <span v-else-if="key=='securityDefinitions'">
+              <dt>securityDefinitions</dt>
+              <dd>
+                <swagger-securitydefinitions v-model="swagger_json.securityDefinitions"></swagger-securitydefinitions>
+              </dd>
+            </span>
+            <span v-else-if="key=='paths' || key=='definitions'">
+            </span>
+            <span v-else>
+              <dt class="checkbox">{{key}}</dt>
+              <dd><input type="text" class="form-control" v-bind:value="JSON.stringify(swagger_json[key])" readonly></dd>
+            </span>
+          </span>
+        </dl>
+
+
+        <ul class="list-unstyled" v-if="swagger_type">
+          <h3>paths</h3>
+          <li v-if="swagger_json.paths">
+            <div slot="content" v-for="(value, key, index) in swagger_json.paths">
+              <collapse-panel v-bind:id="'path_' + index" v-bind:title="key" class="panel-primary">
+                <div slot="content">
+                  <button class="btn btn-default btn-xs pull-right" v-on:click="do_delete_entrypoint(key)">削除</button><br>
+                  <div class="panel-body">
+                    <swagger-entrypoint v-bind:id="'ep_' + index" v-model="swagger_json.paths[key]"></swagger-entrypoint>
+                  </div>
+                </div>
+              </collapse-panel>
+            </div>
+            <div slot="content">
+              <button class="btn btn-default" v-on:click="do_append_entrypoint">Entripoint追加</button><br><br>
+            </div>
+          </li>
+
+          <h3>definitions</h3>
+          <li v-if="swagger_json.definitions">
+            <div slot="content" v-for="(value, key, index) in swagger_json.definitions">
+              <collapse-panel v-bind:id="'def_' + key" v-bind:title="key" class="panel-default">
+                <div slot="content">
+                  <button class="btn btn-default btn-xs pull-right" v-on:click="do_delete_definition(key)">削除</button>
+                  <div class="panel-body">
+                    <swagger-definition v-bind:id="'defs_' + index" v-model="swagger_json.definitions[key]"></swagger-definitioin>
+                  </div>
+                </div>
+              </collapse-panel>
+            </div>
+            <div slot="content">
+              <button class="btn btn-default" v-on:click="do_append_definition">Definition追加</button><br><br>
+            </div>            
+          </li>
+        </ul>
+        <br>
+
+
+        <modal-dialog id="view_json_dialog" size="lg">
+          <div slot="content">
+            <div class="modal-body">
+              <div class="form-inline">
+                <label>view_type</label>
+                <select class="form-control" v-model="select_view_type" v-on:change="change_view_type">
+                  <option value="json">json</option>
+                  <option value="yaml">yaml</option>
+                </select>
+              </div>
+              <textarea class="form-control" rows="25">{{swagger_json_view}}</textarea>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-default" v-on:click="dialog_close()">Close</button>
+            </div>
+          </div>
+        </modal-dialog>
+
+        <modal-dialog id="append_select_dialog">
+          <template v-slot:content="props">
+            <div class="modal-body" v-if="props.id==dialog_target">
+              <span class="form-inline" >
+                <label>{{dialog_content.title}}</label>
+                <select class="form-control" v-model="dialog_content.selected">
+                  <option v-for="(value, index) in dialog_content.choice" v-bind:value="value">{{value}}</option>
+                </select>
+              </span>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-default" v-on:click="dialog_custom_close(0)">追加</button>
+              <button class="btn btn-default" v-on:click="dialog_custom_close(-1)">キャンセル</button>
+            </div>
+          </template>
+        </modal-dialog>
+
+        <modal-dialog id="append_number_dialog">
+          <template v-slot:content="props">
+            <div class="modal-body" v-if="props.id==dialog_target">
+              <span class="form-inline">
+                <label>{{dialog_content.title}}</label>
+                <input type="number" class="form-control" v-model.number="dialog_content.number">
+              </span>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-default" v-on:click="dialog_custom_close(0)">追加</button>
+              <button class="btn btn-default" v-on:click="dialog_custom_close(-1)">キャンセル</button>
+            </div>
+          </template>
+        </modal-dialog>
+
+        <modal-dialog id="append_string_dialog">
+          <template v-slot:content="props">
+            <div class="modal-body" v-if="props.id==dialog_target">
+              <span class="form-inline">
+                <label>{{dialog_content.title}}</label>
+                <input type="string" class="form-control" v-model="dialog_content.string">
+              </span>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-default" v-on:click="dialog_custom_close(0)">追加</button>
+              <button class="btn btn-default" v-on:click="dialog_custom_close(-1)">キャンセル</button>
+            </div>
+          </template>
+        </modal-dialog>
+
+        <!-- for progress-dialog -->
+        <progress-dialog v-bind:title="progress_title"></progress-dialog>
+    </div>
+
+    <script src="js/start.js"></script>
+</body>
