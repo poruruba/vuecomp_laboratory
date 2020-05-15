@@ -95,6 +95,7 @@ var vue_options = {
         progress_title: '', // for progress-dialog
 
         inout_text: 'initial text',
+        data: 'initial data',
     },
     computed: {
     },
