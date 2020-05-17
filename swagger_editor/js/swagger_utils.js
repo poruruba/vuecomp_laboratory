@@ -71,6 +71,8 @@ const choice_consprod = [
   "application/x-www-form-urlencoded",
   "text/plain",
   "text/html",
+  "application/octet-stream",
+  "image/png",
 ];
 
 const type_format = {
