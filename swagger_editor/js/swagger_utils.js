@@ -68,7 +68,8 @@ const choice_consprod = [
   "application/json",
   "application/xml",
   "multipart/form-data",
-  "application/x-www-form-urlencoded"
+  "application/x-www-form-urlencoded",
+  "test/plain",
 ];
 
 const type_format = {
