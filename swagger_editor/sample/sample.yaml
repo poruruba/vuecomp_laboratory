@@ -47,10 +47,7 @@ paths:
         description: "Pet object that needs to be added to the store"
         required: true
         schema:
-          type: string
-          enum:
-            - abc
-            - def
+          $ref: "#/definitions/Pet"
       responses:
         405:
           description: "Invalid input"
@@ -323,10 +320,7 @@ paths:
         description: "order placed for purchasing the pet"
         required: true
         schema:
-          type: object
-          properties:
-            abc:
-              type: string
+          $ref: "#/definitions/Order"
       responses:
         200:
           description: "successful operation"
